@@ -38,8 +38,8 @@ const rutasArticulos = require("./rutas/articuloRutas");
 app.use("/api/articulos", rutasArticulos);
 
 // TODO (equipo Back): Descomentar cuando esté lista
-// const rutasUsuarios = require("./rutas/usuarioRutas");
-// app.use("/api/usuarios", rutasUsuarios);
+const rutasUsuarios = require("./rutas/usuarioRutas");
+app.use("/api/usuarios", rutasUsuarios);
 
 // ─── Middleware de errores 404 ─────────────────────────────────────────────
 app.use((solicitud, respuesta) => {
