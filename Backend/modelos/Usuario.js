@@ -2,20 +2,20 @@ const mongoose = require("mongoose");
 
 // ── Sub-esquema: Perfil profesional ───────────────────────────────
 // Se activa solo cuando el usuario tiene el rol "profesional".
-// { _id: false } mantiene consistencia con el sub-esquema de vendedor .
+// { _id: false } mantiene consistencia con el sub-esquema de vendedor.
 const perfilProfesionalSchema = new mongoose.Schema(
     {
         oficio: {
             type: String,
             enum: {
                 values: ["plomero", "electricista", "gasista", "carpintero", "pintor", "otro"],
-                message: 'El oficio "{VALUE}" no es valido.',
+                message: 'El oficio "{VALUE}" no es válido.',
             },
         },
         descripcion: {
             type: String,
             trim: true,
-            maxlength: [300, "La descripcion no puede superar los 300 caracteres."],
+            maxlength: [300, "La descripción no puede superar los 300 caracteres."],
         },
         preciohora: {
             type: Number,
@@ -26,13 +26,13 @@ const perfilProfesionalSchema = new mongoose.Schema(
             trim: true,
         },
     },
-    { _id: false}
+    { _id: false }
 );
 
-// ── Esquema principal: Usuario────────────────────────────────────
+// ── Esquema principal: Usuario ────────────────────────────────────
 const usuarioSchema = new mongoose.Schema(
     {
-        //identidad
+        // Identidad
         nombre: {
             type: String,
             required: [true, "El nombre es obligatorio."],
@@ -49,84 +49,70 @@ const usuarioSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
-            match: [/^\S+@\S+\.\S+$/, "El formato de email no es valido."],
+            match: [/^\S+@\S+\.\S+$/, "El formato de email no es válido."],
         },
         contraseña: {
             type: String,
             required: [true, "La contraseña es obligatoria."],
             minlength: [6, "La contraseña debe tener al menos 6 caracteres."],
-            select: false, // nunca se devuelve en queries por seguridad
+            select: false, // Nunca se devuelve en queries por seguridad
         },
         telefono: {
             type: String,
             trim: true,
         },
 
-        // foto de perfil
-        // guarda una URL (externa o local). compatible con Cloudinary,
-        // alamaenamiento local o cualquier servicio futuro sin cambiar el esquema.
+        // Foto de perfil
         fotoPerfil: {
             type: String,
             default: null,
         },
 
         // Roles
-        // Un usuario puede cambiar roles sin crear cuentas nuevas.
-        // por defecto arranca como cliente
         roles: {
             type: [String],
             enum: {
                 values: ["cliente", "Dueño", "Profesional"],
-                message: 'El rol "{VALUE}" no es valido.', 
+                message: 'El rol "{VALUE}" no es válido.', 
             },
             default: ["cliente"],
         },
 
-        // perfil profesional (solo relevante si roles incluye "profesional")
+        // Perfil profesional (solo relevante si roles incluye "Profesional")
         perfilProfesional: perfilProfesionalSchema,
 
-        //Reputacion
-        // puntuacion: promedio calculando al crear/actualizar reseñas.
-        // cantidadReseñas: necesario para que el front muestre confiabilidad del promedio.
+        // Reputación
         puntuacion: {
             type: Number,
             default: 0,
-            min: [0, "la puntuacion no puede ser menor a 0"],
-            max: [5, "La puntuacion no puede ser mayor a 5"],
+            min: [0, "La puntuación no puede ser menor a 0"],
+            max: [5, "La puntuación no puede ser mayor a 5"],
         },
         cantidadReseñas: {
             type: Number,
-            default:0,
+            default: 0,
         },
 
         // Control de cuenta
-        // Baja logica: desactivar sin borrar el historial del usuario.
         activo: {
             type: Boolean,
             default: true,
         },
     },
     {
-        //agrega automaticamente createdAt y updetedAt
-        timestamps: {createdAt: "fechaRegistro", updatedAt: "fechaActualizacion"},
+        // Agrega automáticamente fechaRegistro y fechaActualizacion
+        timestamps: { createdAt: "fechaRegistro", updatedAt: "fechaActualizacion" },
     }
 );
 
-// --- indices ---
-// email ya tiene indice por unique: true.
-//Indexamos roles para filtrar profesionales o dueños eficientemente.
-usuarioSchema.index({ roles: 1});
+// --- Índices ---
+usuarioSchema.index({ roles: 1 });
 
-// --- validacion condicional ---
-// Si el usuario es profesionalm, el oficio dentro del perfil es obligatorio.
-// Espeja la logica condicional de precioServicio en articulo.js.
-usuarioSchema.pre("save", function (next) {
+// --- Validación condicional ---
+usuarioSchema.pre("save", function () {
     if (this.roles.includes("Profesional") && !this.perfilProfesional?.oficio) {
-        return next(
-            new Error("Un usuario profesional debe indicar su oficio en el perfil.")
-        );
+        throw new Error("Un usuario profesional debe indicar su oficio en el perfil.");
     }
-    next();
 });
 
 module.exports = mongoose.model("Usuario", usuarioSchema);

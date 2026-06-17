@@ -1,4 +1,3 @@
-// servidor.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -11,8 +10,8 @@ const PUERTO = process.env.PUERTO || 3000;
 conectarBaseDeDatos();
 
 // ─── Middlewares globales ──────────────────────────────────────────────────
-app.use(cors());                        // Permite peticiones desde el frontend (React/Vite)
-app.use(express.json());                // Parsea body en formato JSON
+app.use(cors());                                // Permite peticiones desde el frontend (React/Vite)
+app.use(express.json());                        // Parsea body en formato JSON
 app.use(express.urlencoded({ extended: true })); // Parsea body de formularios
 
 // ─── Middleware de logging (desarrollo) ───────────────────────────────────
@@ -37,7 +36,7 @@ app.get("/api/estado", (solicitud, respuesta) => {
 const rutasArticulos = require("./rutas/articuloRutas");
 app.use("/api/articulos", rutasArticulos);
 
-// TODO (equipo Back): Descomentar cuando esté lista
+// Rutas de Usuarios (Registro y Login)
 const rutasUsuarios = require("./rutas/usuarioRutas");
 app.use("/api/usuarios", rutasUsuarios);
 
