@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 // ── Sub-esquema: Perfil profesional ───────────────────────────────
 // Se activa solo cuando el usuario tiene el rol "profesional".
@@ -73,7 +74,7 @@ const usuarioSchema = new mongoose.Schema(
             type: [String],
             enum: {
                 values: ["cliente", "Dueño", "Profesional"],
-                message: 'El rol "{VALUE}" no es válido.', 
+                message: 'El rol "{VALUE}" no es válido.',
             },
             default: ["cliente"],
         },
@@ -108,11 +109,19 @@ const usuarioSchema = new mongoose.Schema(
 // --- Índices ---
 usuarioSchema.index({ roles: 1 });
 
-// --- Validación condicional ---
-usuarioSchema.pre("save", function () {
+usuarioSchema.pre("save", async function () {
     if (this.roles.includes("Profesional") && !this.perfilProfesional?.oficio) {
         throw new Error("Un usuario profesional debe indicar su oficio en el perfil.");
     }
+
+    if (this.isModified("contraseña")) {
+        this.contraseña = await bcrypt.hash(this.contraseña, 10);
+    }
 });
+
+// --- Método para comparar contraseña en el login ---
+usuarioSchema.methods.compararContraseña = function (contraseñaIngresada) {
+    return bcrypt.compare(contraseñaIngresada, this.contraseña);
+};
 
 module.exports = mongoose.model("Usuario", usuarioSchema);

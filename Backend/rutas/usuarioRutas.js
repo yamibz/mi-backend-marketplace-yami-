@@ -1,11 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const { registrarUsuario, loginUsuario } = require("../controladores/usuarioControlador");
 
-// Ruta para registrarse
+const {
+  registrarUsuario,
+  obtenerPerfil,
+  iniciarSesion,
+} = require("../controladores/usuarioControlador");
+
+// Registro
 router.post("/registro", registrarUsuario);
 
-// Ruta para iniciar sesión (Login)
-router.post("/login", loginUsuario);
+// Login
+router.post("/login", iniciarSesion);
+
+// Obtener perfil por ID
+router.get("/:id", obtenerPerfil);
 
 module.exports = router;
